@@ -2,10 +2,10 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "NodeNext",                   // ✅ ESM-compatible
-    "moduleResolution": "NodeNext",         // ✅ Required for node-fetch@3
+    "moduleResolution": "NodeNext",         // ✅ Required for ESM
     "lib": ["ES2020"],
     "strict": true,
-    "esModuleInterop": true,
+    "esModuleInterop": false,               // ❌ Turn this OFF for pure ESM
     "skipLibCheck": true,
     "outDir": "dist",
     "rootDir": "src",
