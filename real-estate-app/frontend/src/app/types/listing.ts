@@ -1,14 +1,23 @@
+// src/types/listings.ts
+
+export type PropertyType = "Apartment" | "House" | "Commercial";
+export type ListingStatus = "For Sale" | "For Rent";
+
+export type Coordinates = {
+  lat: number;
+  lng: number;
+};
+
 export type Listing = {
   id: string;
   title: string;
   description: string;
   location: string;
   price: number;
-  property_type: "Apartment" | "House" | "Commercial";
-  status: "For Sale" | "For Rent";
+  property_type: PropertyType;
+  status: ListingStatus;
   images: string[];
-  coordinates?: {
-    lat: number;
-    lng: number;
-  };
+  coordinates?: Coordinates;
+  created_at?: string;
+  updated_at?: string;
 };

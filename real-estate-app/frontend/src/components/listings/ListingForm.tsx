@@ -184,7 +184,9 @@ export default function ListingForm({ onSuccess }: Props) {
           <Label>Property Type</Label>
           <Select
             value={propertyType}
-            onValueChange={(v) => setPropertyType(v as any)}
+            onValueChange={(v: "Apartment" | "House" | "Commercial") =>
+              setPropertyType(v)
+            }
           >
             <SelectTrigger className="w-full">{propertyType}</SelectTrigger>
             <SelectContent>
@@ -197,7 +199,10 @@ export default function ListingForm({ onSuccess }: Props) {
 
         <div>
           <Label>Status</Label>
-          <Select value={status} onValueChange={(v) => setStatus(v as any)}>
+          <Select
+            value={status}
+            onValueChange={(v: "For Sale" | "For Rent") => setStatus(v)}
+          >
             <SelectTrigger className="w-full">{status}</SelectTrigger>
             <SelectContent>
               <SelectItem value="For Sale">For Sale</SelectItem>

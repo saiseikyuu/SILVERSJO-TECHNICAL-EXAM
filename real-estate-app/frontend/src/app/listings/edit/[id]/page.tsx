@@ -13,6 +13,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { PropertyType, ListingStatus } from "@/app/types/listing";
 
 type LocationSuggestion = {
   place_name: string;
@@ -35,10 +36,8 @@ export default function EditListingPage() {
   const [selectedLocation, setSelectedLocation] =
     useState<LocationSuggestion | null>(null);
   const [price, setPrice] = useState("");
-  const [propertyType, setPropertyType] = useState<
-    "Apartment" | "House" | "Commercial"
-  >("Apartment");
-  const [status, setStatus] = useState<"For Sale" | "For Rent">("For Sale");
+  const [propertyType, setPropertyType] = useState<PropertyType>("Apartment");
+  const [status, setStatus] = useState<ListingStatus>("For Sale");
   const [imageUrls, setImageUrls] = useState<string[]>([""]);
 
   //  Fetch existing listing
@@ -218,7 +217,7 @@ export default function EditListingPage() {
           <Label>Property Type</Label>
           <Select
             value={propertyType}
-            onValueChange={(v) => setPropertyType(v as any)}
+            onValueChange={(v: PropertyType) => setPropertyType(v)}
           >
             <SelectTrigger className="w-full">{propertyType}</SelectTrigger>
             <SelectContent>
@@ -231,7 +230,10 @@ export default function EditListingPage() {
 
         <div>
           <Label>Status</Label>
-          <Select value={status} onValueChange={(v) => setStatus(v as any)}>
+          <Select
+            value={status}
+            onValueChange={(v: ListingStatus) => setStatus(v)}
+          >
             <SelectTrigger className="w-full">{status}</SelectTrigger>
             <SelectContent>
               <SelectItem value="For Sale">For Sale</SelectItem>
