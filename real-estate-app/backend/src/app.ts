@@ -1,4 +1,3 @@
-// app.ts
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -13,11 +12,8 @@ dotenv.config();
 
 const app = express();
 
-// Dynamic CORS origin
-const allowedOrigins = [
-  "http://localhost:3000",
-  process.env.CORS_ORIGIN,
-].filter(Boolean); // remove undefined
+// ✅ Clean CORS setup for production
+const allowedOrigins = [process.env.CORS_ORIGIN].filter(Boolean);
 
 app.use(
   cors({
