@@ -1,7 +1,7 @@
 //routes/uploads.ts
 import { Router } from 'express';
-import { requireAuth } from '../middleware/requireAuth';
-import { requireAdmin } from '../middleware/requireAdmin';
+import { requireAuth } from '../middleware/requireAuth.js';
+import { requireAdmin } from '../middleware/requireAdmin.js';
 import { z } from 'zod';
 
 const router = Router();
