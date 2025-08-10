@@ -15,10 +15,12 @@ export default function AuthButtons() {
   };
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-3 text-sm">
       {user ? (
         <>
-          <span className="text-sm text-gray-600">Welcome, {user.email}</span>
+          <span className="text-gray-600 hidden sm:inline">
+            Welcome, {user.email}
+          </span>
           <button
             onClick={handleLogout}
             className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
