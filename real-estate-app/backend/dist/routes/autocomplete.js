@@ -1,11 +1,6 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const node_fetch_1 = __importDefault(require("node-fetch"));
-const router = (0, express_1.Router)();
+import { Router } from "express";
+import fetch from "node-fetch";
+const router = Router();
 router.get("/", async (req, res) => {
     const query = req.query.q;
     if (!query || query.length < 3) {
@@ -17,7 +12,7 @@ router.get("/", async (req, res) => {
     }
     const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&autocomplete=true&limit=5&country=PH`;
     try {
-        const response = await (0, node_fetch_1.default)(url);
+        const response = await fetch(url);
         if (!response.ok) {
             console.error("Mapbox API error:", response.statusText);
             return res.status(502).json({ error: "Mapbox API failed" });
@@ -46,4 +41,4 @@ router.get("/", async (req, res) => {
         res.status(500).json({ error: "Failed to fetch suggestions" });
     }
 });
-exports.default = router;
+export default router;

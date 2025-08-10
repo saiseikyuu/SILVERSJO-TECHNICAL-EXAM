@@ -1,14 +1,11 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.authenticate = authenticate;
-const supabase_1 = require("../lib/supabase");
-async function authenticate(req, res, next) {
+import { supabaseAdmin } from '../lib/supabase.js';
+export async function authenticate(req, res, next) {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
         return res.status(401).json({ error: 'Missing or invalid Authorization header' });
     }
     const token = authHeader.split(' ')[1];
-    const { data, error } = await supabase_1.supabaseAdmin.auth.getUser(token);
+    const { data, error } = await supabaseAdmin.auth.getUser(token);
     if (error || !data?.user) {
         return res.status(401).json({ error: 'Invalid token' });
     }

@@ -1,29 +1,27 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const supabase_1 = require("../lib/supabase");
-const requireAuth_1 = require("../middleware/requireAuth");
-const requireAdmin_1 = require("../middleware/requireAdmin");
-const zod_1 = require("zod");
-const router = (0, express_1.Router)();
+import { Router } from 'express';
+import { supabaseAdmin } from '../lib/supabase.js';
+import { requireAuth } from '../middleware/requireAuth.js';
+import { requireAdmin } from '../middleware/requireAdmin.js';
+import { z } from 'zod';
+const router = Router();
 // ✅ Updated Zod schema with coordinates
-const listingSchema = zod_1.z.object({
-    title: zod_1.z.string(),
-    description: zod_1.z.string(),
-    location: zod_1.z.string(),
-    price: zod_1.z.number(),
-    property_type: zod_1.z.enum(['Apartment', 'House', 'Commercial']),
-    status: zod_1.z.enum(['For Sale', 'For Rent']),
-    images: zod_1.z.array(zod_1.z.string()).optional(),
-    coordinates: zod_1.z.object({
-        lat: zod_1.z.number(),
-        lng: zod_1.z.number(),
+const listingSchema = z.object({
+    title: z.string(),
+    description: z.string(),
+    location: z.string(),
+    price: z.number(),
+    property_type: z.enum(['Apartment', 'House', 'Commercial']),
+    status: z.enum(['For Sale', 'For Rent']),
+    images: z.array(z.string()).optional(),
+    coordinates: z.object({
+        lat: z.number(),
+        lng: z.number(),
     }),
 });
 // GET /api/listings — search, filter, paginate
 router.get('/', async (req, res) => {
     const { q, minPrice, maxPrice, type, status, page = 1, limit = 10, } = req.query;
-    let query = supabase_1.supabaseAdmin
+    let query = supabaseAdmin
         .from('listings')
         .select('*', { count: 'exact' });
     if (q) {
@@ -53,7 +51,7 @@ router.get('/', async (req, res) => {
 // GET /api/listings/:id — fetch single listing
 router.get('/:id', async (req, res) => {
     const { id } = req.params;
-    const { data, error } = await supabase_1.supabaseAdmin
+    const { data, error } = await supabaseAdmin
         .from('listings')
         .select('*')
         .eq('id', id)
@@ -65,13 +63,13 @@ router.get('/:id', async (req, res) => {
     res.json(data);
 });
 // POST /api/listings — create listing (admin only)
-router.post('/', requireAuth_1.requireAuth, requireAdmin_1.requireAdmin, async (req, res) => {
+router.post('/', requireAuth, requireAdmin, async (req, res) => {
     const parse = listingSchema.safeParse(req.body);
     if (!parse.success) {
         return res.status(400).json({ error: parse.error.issues });
     }
     console.log("Creating listing with:", parse.data); // ✅ Debug log
-    const { data, error } = await supabase_1.supabaseAdmin
+    const { data, error } = await supabaseAdmin
         .from('listings')
         .insert([parse.data])
         .select()
@@ -81,13 +79,13 @@ router.post('/', requireAuth_1.requireAuth, requireAdmin_1.requireAdmin, async (
     res.status(201).json(data);
 });
 // PUT /api/listings/:id — full update (admin only)
-router.put('/:id', requireAuth_1.requireAuth, requireAdmin_1.requireAdmin, async (req, res) => {
+router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
     const { id } = req.params;
     const parse = listingSchema.safeParse(req.body);
     if (!parse.success) {
         return res.status(400).json({ error: parse.error.issues });
     }
-    const { data, error } = await supabase_1.supabaseAdmin
+    const { data, error } = await supabaseAdmin
         .from('listings')
         .update(parse.data)
         .eq('id', id)
@@ -98,13 +96,13 @@ router.put('/:id', requireAuth_1.requireAuth, requireAdmin_1.requireAdmin, async
     res.json(data);
 });
 // PATCH /api/listings/:id — partial update (admin only)
-router.patch('/:id', requireAuth_1.requireAuth, requireAdmin_1.requireAdmin, async (req, res) => {
+router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
     const { id } = req.params;
     const parse = listingSchema.partial().safeParse(req.body);
     if (!parse.success) {
         return res.status(400).json({ error: parse.error.issues });
     }
-    const { data, error } = await supabase_1.supabaseAdmin
+    const { data, error } = await supabaseAdmin
         .from('listings')
         .update(parse.data)
         .eq('id', id)
@@ -115,9 +113,9 @@ router.patch('/:id', requireAuth_1.requireAuth, requireAdmin_1.requireAdmin, asy
     res.json(data);
 });
 // DELETE /api/listings/:id — delete listing (admin only)
-router.delete('/:id', requireAuth_1.requireAuth, requireAdmin_1.requireAdmin, async (req, res) => {
+router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
     const { id } = req.params;
-    const { error } = await supabase_1.supabaseAdmin
+    const { error } = await supabaseAdmin
         .from('listings')
         .delete()
         .eq('id', id);
@@ -127,4 +125,4 @@ router.delete('/:id', requireAuth_1.requireAuth, requireAdmin_1.requireAdmin, as
     }
     res.status(204).send();
 });
-exports.default = router;
+export default router;

@@ -1,15 +1,13 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const supabase_1 = require("../../lib/supabase");
-const router = (0, express_1.Router)();
+import { Router } from 'express';
+import { supabaseAdmin } from '../../lib/supabase.js';
+const router = Router();
 router.post('/signup', async (req, res) => {
     const { email, password, role = 'user' } = req.body;
     if (!email || !password) {
         return res.status(400).json({ error: 'Email and password are required.' });
     }
     // Create user in Supabase Auth
-    const { data: userData, error: userError } = await supabase_1.supabaseAdmin.auth.admin.createUser({
+    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.createUser({
         email,
         password,
         email_confirm: true,
@@ -20,7 +18,7 @@ router.post('/signup', async (req, res) => {
     }
     const { id } = userData.user;
     // Insert into profiles table
-    const { error: profileError } = await supabase_1.supabaseAdmin
+    const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .insert([{ id, email, role }]);
     if (profileError) {
@@ -28,4 +26,4 @@ router.post('/signup', async (req, res) => {
     }
     return res.status(201).json({ message: `User ${email} created with role ${role}` });
 });
-exports.default = router;
+export default router;

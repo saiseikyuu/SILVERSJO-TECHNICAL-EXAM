@@ -1,10 +1,8 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const supabase_js_1 = require("@supabase/supabase-js");
-const router = (0, express_1.Router)();
+import { Router } from 'express';
+import { createClient } from '@supabase/supabase-js';
+const router = Router();
 // Use public Supabase client for login
-const supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY // ✅ Use anon key for auth
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY // ✅ Use anon key for auth
 );
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
@@ -34,4 +32,4 @@ router.post('/login', async (req, res) => {
         }
     });
 });
-exports.default = router;
+export default router;

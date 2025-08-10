@@ -1,17 +1,6 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.handler = void 0;
 // index.ts
-const serverless_http_1 = __importDefault(require("serverless-http"));
-const app_1 = __importDefault(require("./app"));
-const isLocal = process.env.LOCAL === "true";
-if (isLocal) {
-    const port = process.env.PORT || 4000;
-    app_1.default.listen(port, () => {
-        console.log(`Server running locally on http://localhost:${port}`);
-    });
-}
-exports.handler = (0, serverless_http_1.default)(app_1.default);
+import app from "./app.js"; // ✅ Use `.js` extension for ESM compatibility
+const port = process.env.PORT || 4000;
+app.listen(port, () => {
+    console.log(`🚀 Server running on http://localhost:${port}`);
+});

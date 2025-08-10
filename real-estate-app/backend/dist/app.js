@@ -1,26 +1,21 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
 // app.ts
-const express_1 = __importDefault(require("express"));
-const cors_1 = __importDefault(require("cors"));
-const dotenv_1 = __importDefault(require("dotenv"));
-const listings_1 = __importDefault(require("./routes/listings"));
-const uploads_1 = __importDefault(require("./routes/uploads"));
-const signup_1 = __importDefault(require("./routes/auth/signup"));
-const login_1 = __importDefault(require("./routes/auth/login"));
-const autocomplete_1 = __importDefault(require("./routes/autocomplete"));
-const inquiries_1 = __importDefault(require("./routes/inquiries"));
-dotenv_1.default.config();
-const app = (0, express_1.default)();
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import listingsRouter from "./routes/listings.js";
+import uploadsRouter from "./routes/uploads.js";
+import authRouter from "./routes/auth/signup.js";
+import loginRouter from "./routes/auth/login.js";
+import autocompleteRoute from "./routes/autocomplete.js";
+import inquiriesRoute from "./routes/inquiries.js";
+dotenv.config();
+const app = express();
 // Dynamic CORS origin
 const allowedOrigins = [
     "http://localhost:3000",
     process.env.CORS_ORIGIN,
 ].filter(Boolean); // remove undefined
-app.use((0, cors_1.default)({
+app.use(cors({
     origin: (origin, callback) => {
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
@@ -31,12 +26,12 @@ app.use((0, cors_1.default)({
     },
     credentials: true,
 }));
-app.use(express_1.default.json());
+app.use(express.json());
 app.get("/health", (_, res) => res.send({ status: "ok" }));
-app.use("/api/listings", listings_1.default);
-app.use("/api/uploads", uploads_1.default);
-app.use("/api/auth", signup_1.default);
-app.use("/api/auth", login_1.default);
-app.use("/api/autocomplete", autocomplete_1.default);
-app.use("/api/inquiries", inquiries_1.default);
-exports.default = app;
+app.use("/api/listings", listingsRouter);
+app.use("/api/uploads", uploadsRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/auth", loginRouter);
+app.use("/api/autocomplete", autocompleteRoute);
+app.use("/api/inquiries", inquiriesRoute);
+export default app;
