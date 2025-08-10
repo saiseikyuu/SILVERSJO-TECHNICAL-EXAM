@@ -54,7 +54,7 @@ router.get("/", async (req, res) => {
 
     const suggestions = data.features.map((f) => ({
       place_name: f.place_name,
-      coordinates: f.center, // [lng, lat]
+      coordinates: f.center, 
     }));
 
     res.json(suggestions);

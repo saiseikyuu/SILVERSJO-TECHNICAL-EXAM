@@ -16,6 +16,6 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     return res.status(401).json({ error: 'Invalid token' });
   }
 
-  req.user = data.user; // ✅ This is the actual User object
+  req.user = data.user; 
   next();
 }

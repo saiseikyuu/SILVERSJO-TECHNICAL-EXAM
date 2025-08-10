@@ -14,6 +14,6 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
     return res.status(401).json({ error: 'Invalid token' })
   }
 
-  req.user = data.user // ✅ Fixes your type error
+  req.user = data.user 
   next()
 }

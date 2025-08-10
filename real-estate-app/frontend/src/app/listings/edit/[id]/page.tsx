@@ -12,128 +12,215 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { z } from "zod";
+import { toast } from "sonner";
 
-const ListingSchema = z.object({
-  title: z.string().min(3),
-  description: z.string().min(10),
-  location: z.string().min(3),
-  price: z.coerce.number().min(0),
-  property_type: z.enum(["Apartment", "House", "Commercial"]),
-  status: z.enum(["For Sale", "For Rent"]),
-});
-
-type ListingForm = z.infer<typeof ListingSchema>;
+type LocationSuggestion = {
+  place_name: string;
+  coordinates: [number, number];
+};
 
 export default function EditListingPage() {
   const { id } = useParams();
   const router = useRouter();
-  const [form, setForm] = useState<ListingForm | null>(null);
-  const [loading, setLoading] = useState(true);
 
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [locationInput, setLocationInput] = useState("");
+  const [locationSuggestions, setLocationSuggestions] = useState<
+    LocationSuggestion[]
+  >([]);
+  const [selectedLocation, setSelectedLocation] =
+    useState<LocationSuggestion | null>(null);
+  const [price, setPrice] = useState("");
+  const [propertyType, setPropertyType] = useState<
+    "Apartment" | "House" | "Commercial"
+  >("Apartment");
+  const [status, setStatus] = useState<"For Sale" | "For Rent">("For Sale");
+  const [imageUrls, setImageUrls] = useState<string[]>([""]);
+
+  //  Fetch existing listing
   useEffect(() => {
     async function fetchListing() {
       const res = await fetch(`http://localhost:4000/api/listings/${id}`);
       const data = await res.json();
-      setForm(data);
+
+      setTitle(data.title);
+      setDescription(data.description);
+      setLocationInput(data.location);
+      setSelectedLocation({
+        place_name: data.location,
+        coordinates: [data.coordinates.lng, data.coordinates.lat],
+      });
+      setPrice(String(data.price));
+      setPropertyType(data.property_type);
+      setStatus(data.status);
+      setImageUrls(data.images || [""]);
       setLoading(false);
     }
 
     fetchListing();
   }, [id]);
 
-  function handleChange<K extends keyof ListingForm>(
-    key: K,
-    value: ListingForm[K]
-  ) {
-    setForm((prev) => (prev ? { ...prev, [key]: value } : prev));
+  // Autocomplete suggestions
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      if (locationInput.length >= 3) {
+        fetch(
+          `http://localhost:4000/api/autocomplete?q=${encodeURIComponent(
+            locationInput
+          )}`
+        )
+          .then((res) => res.json())
+          .then((data) => setLocationSuggestions(data))
+          .catch(() => setLocationSuggestions([]));
+      } else {
+        setLocationSuggestions([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(delay);
+  }, [locationInput]);
+
+  function handleSelectSuggestion(suggestion: LocationSuggestion) {
+    setSelectedLocation(suggestion);
+    setLocationInput(suggestion.place_name);
+    setLocationSuggestions([]);
   }
 
-  async function handleSubmit() {
-    if (!form) return;
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
 
-    const result = ListingSchema.safeParse(form);
-    if (!result.success) {
-      alert("Validation failed");
-      console.error(result.error.format());
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      toast.error("Missing access token.");
+      setSubmitting(false);
       return;
     }
 
-    const token = localStorage.getItem("access_token");
-    if (!token) return alert("Missing access token");
-
-    try {
-      const res = await fetch(`http://localhost:4000/api/listings/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(result.data),
-      });
-
-      if (res.ok) {
-        alert("Listing updated!");
-        router.push("/listings");
-      } else {
-        const error = await res.json();
-        alert(error.error || "Failed to update listing.");
-      }
-    } catch (err) {
-      console.error("Update failed:", err);
-      alert("Error updating listing.");
+    if (!selectedLocation) {
+      toast.warning("Please select a location from the suggestions.");
+      setSubmitting(false);
+      return;
     }
+
+    const payload = {
+      title,
+      description,
+      location: selectedLocation.place_name,
+      coordinates: {
+        lat: selectedLocation.coordinates[1],
+        lng: selectedLocation.coordinates[0],
+      },
+      price: Number(price),
+      property_type: propertyType,
+      status,
+      images: imageUrls.filter((url) => url.trim() !== ""),
+    };
+
+    const res = await fetch(`http://localhost:4000/api/listings/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      toast.success("Listing updated!");
+      router.push("/listings");
+    } else {
+      const error = await res.json();
+      toast.error(error.error || "Failed to update listing.");
+    }
+
+    setSubmitting(false);
   }
 
-  if (loading || !form) return <p className="p-10 text-center">Loading...</p>;
+  if (loading) return <p className="p-10 text-center">Loading...</p>;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10 space-y-6">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6 max-w-2xl mx-auto px-4 py-10"
+    >
       <h1 className="text-2xl font-bold">Edit Listing</h1>
 
-      <div className="space-y-4">
+      {/* Title & Price */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
-          <Label>Title</Label>
+          <Label htmlFor="title">Title</Label>
           <Input
-            value={form.title}
-            onChange={(e) => handleChange("title", e.target.value)}
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
           />
         </div>
-
         <div>
-          <Label>Description</Label>
-          <Textarea
-            value={form.description}
-            onChange={(e) => handleChange("description", e.target.value)}
-          />
-        </div>
-
-        <div>
-          <Label>Location</Label>
+          <Label htmlFor="price">Price</Label>
           <Input
-            value={form.location}
-            onChange={(e) => handleChange("location", e.target.value)}
-          />
-        </div>
-
-        <div>
-          <Label>Price</Label>
-          <Input
+            id="price"
             type="number"
-            value={form.price}
-            onChange={(e) => handleChange("price", Number(e.target.value))}
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            required
           />
         </div>
+      </div>
 
+      <div>
+        <Label htmlFor="description">Description</Label>
+        <Textarea
+          id="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
+          className="min-h-[120px]"
+        />
+      </div>
+
+      {/* Location Autocomplete */}
+      <div>
+        <Label htmlFor="location">Location</Label>
+        <Input
+          id="location"
+          value={locationInput}
+          onChange={(e) => {
+            setLocationInput(e.target.value);
+            setSelectedLocation(null);
+          }}
+          placeholder="Start typing a city or address..."
+          required
+        />
+        {locationSuggestions.length > 0 && (
+          <ul className="bg-white border rounded shadow mt-2 max-h-60 overflow-auto z-10 relative">
+            {locationSuggestions.map((s, i) => (
+              <li
+                key={i}
+                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                onClick={() => handleSelectSuggestion(s)}
+              >
+                {s.place_name}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Property Type & Status */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
-          <Label>Type</Label>
+          <Label>Property Type</Label>
           <Select
-            value={form.property_type}
-            onValueChange={(val) =>
-              handleChange("property_type", val as ListingForm["property_type"])
-            }
+            value={propertyType}
+            onValueChange={(v) => setPropertyType(v as any)}
           >
-            <SelectTrigger>{form.property_type}</SelectTrigger>
+            <SelectTrigger className="w-full">{propertyType}</SelectTrigger>
             <SelectContent>
               <SelectItem value="Apartment">Apartment</SelectItem>
               <SelectItem value="House">House</SelectItem>
@@ -144,24 +231,46 @@ export default function EditListingPage() {
 
         <div>
           <Label>Status</Label>
-          <Select
-            value={form.status}
-            onValueChange={(val) =>
-              handleChange("status", val as ListingForm["status"])
-            }
-          >
-            <SelectTrigger>{form.status}</SelectTrigger>
+          <Select value={status} onValueChange={(v) => setStatus(v as any)}>
+            <SelectTrigger className="w-full">{status}</SelectTrigger>
             <SelectContent>
               <SelectItem value="For Sale">For Sale</SelectItem>
               <SelectItem value="For Rent">For Rent</SelectItem>
             </SelectContent>
           </Select>
         </div>
-
-        <Button onClick={handleSubmit} className="w-full mt-6">
-          Save Changes
-        </Button>
       </div>
-    </div>
+
+      {/* Image URLs */}
+      <div>
+        <Label>Image URLs</Label>
+        <div className="space-y-2">
+          {imageUrls.map((url, i) => (
+            <Input
+              key={i}
+              placeholder={`Image ${i + 1}`}
+              value={url}
+              onChange={(e) => {
+                const updated = [...imageUrls];
+                updated[i] = e.target.value;
+                setImageUrls(updated);
+              }}
+            />
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setImageUrls([...imageUrls, ""])}
+          >
+            Add Another Image
+          </Button>
+        </div>
+      </div>
+
+      {/* Submit Button */}
+      <Button type="submit" disabled={submitting} className="w-full">
+        {submitting ? "Saving..." : "Save Changes"}
+      </Button>
+    </form>
   );
 }

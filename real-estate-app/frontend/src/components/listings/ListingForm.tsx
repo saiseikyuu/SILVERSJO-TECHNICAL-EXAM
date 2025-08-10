@@ -11,6 +11,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 type Props = {
   onSuccess?: () => void;
@@ -48,10 +49,7 @@ export default function ListingForm({ onSuccess }: Props) {
           )}`
         )
           .then((res) => res.json())
-          .then((data) => {
-            console.log("Suggestions:", data);
-            setLocationSuggestions(data);
-          })
+          .then((data) => setLocationSuggestions(data))
           .catch(() => setLocationSuggestions([]));
       } else {
         setLocationSuggestions([]);
@@ -73,13 +71,13 @@ export default function ListingForm({ onSuccess }: Props) {
 
     const token = localStorage.getItem("access_token");
     if (!token) {
-      alert("Missing token");
+      toast.error("Missing access token.");
       setLoading(false);
       return;
     }
 
     if (!selectedLocation) {
-      alert("Please select a location from the suggestions.");
+      toast.warning("Please select a location from the suggestions.");
       setLoading(false);
       return;
     }
@@ -106,10 +104,11 @@ export default function ListingForm({ onSuccess }: Props) {
     });
 
     if (res.ok) {
+      toast.success("Listing created successfully!");
       onSuccess?.();
     } else {
       const error = await res.json();
-      alert(error.error || "Failed to create listing");
+      toast.error(error.error || "Failed to create listing.");
     }
 
     setLoading(false);
@@ -117,14 +116,27 @@ export default function ListingForm({ onSuccess }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <Label htmlFor="title">Title</Label>
-        <Input
-          id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-        />
+      {/* Title & Description */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div>
+          <Label htmlFor="title">Title</Label>
+          <Input
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor="price">Price</Label>
+          <Input
+            id="price"
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            required
+          />
+        </div>
       </div>
 
       <div>
@@ -134,9 +146,11 @@ export default function ListingForm({ onSuccess }: Props) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           required
+          className="min-h-[120px]"
         />
       </div>
 
+      {/* Location Autocomplete */}
       <div>
         <Label htmlFor="location">Location</Label>
         <Input
@@ -150,7 +164,7 @@ export default function ListingForm({ onSuccess }: Props) {
           required
         />
         {locationSuggestions.length > 0 && (
-          <ul className="bg-white border rounded shadow mt-2 max-h-60 overflow-auto">
+          <ul className="bg-white border rounded shadow mt-2 max-h-60 overflow-auto z-10 relative">
             {locationSuggestions.map((s, i) => (
               <li
                 key={i}
@@ -164,43 +178,36 @@ export default function ListingForm({ onSuccess }: Props) {
         )}
       </div>
 
-      <div>
-        <Label htmlFor="price">Price</Label>
-        <Input
-          id="price"
-          type="number"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          required
-        />
+      {/* Property Type & Status */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div>
+          <Label>Property Type</Label>
+          <Select
+            value={propertyType}
+            onValueChange={(v) => setPropertyType(v as any)}
+          >
+            <SelectTrigger className="w-full">{propertyType}</SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Apartment">Apartment</SelectItem>
+              <SelectItem value="House">House</SelectItem>
+              <SelectItem value="Commercial">Commercial</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label>Status</Label>
+          <Select value={status} onValueChange={(v) => setStatus(v as any)}>
+            <SelectTrigger className="w-full">{status}</SelectTrigger>
+            <SelectContent>
+              <SelectItem value="For Sale">For Sale</SelectItem>
+              <SelectItem value="For Rent">For Rent</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <div>
-        <Label>Property Type</Label>
-        <Select
-          value={propertyType}
-          onValueChange={(v) => setPropertyType(v as any)}
-        >
-          <SelectTrigger className="w-full">{propertyType}</SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Apartment">Apartment</SelectItem>
-            <SelectItem value="House">House</SelectItem>
-            <SelectItem value="Commercial">Commercial</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label>Status</Label>
-        <Select value={status} onValueChange={(v) => setStatus(v as any)}>
-          <SelectTrigger className="w-full">{status}</SelectTrigger>
-          <SelectContent>
-            <SelectItem value="For Sale">For Sale</SelectItem>
-            <SelectItem value="For Rent">For Rent</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
+      {/* Image URLs */}
       <div>
         <Label>Image URLs</Label>
         <div className="space-y-2">
@@ -226,6 +233,7 @@ export default function ListingForm({ onSuccess }: Props) {
         </div>
       </div>
 
+      {/* Submit Button */}
       <Button type="submit" disabled={loading} className="w-full">
         {loading ? "Creating..." : "Create Listing"}
       </Button>

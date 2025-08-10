@@ -15,7 +15,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <main className="min-h-screen bg-gray-50 p-4">
           {children}
-          <Toaster richColors position="top-right" />
+          <Toaster richColors position="bottom-right" />
         </main>
       </body>
     </html>
