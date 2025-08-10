@@ -1,0 +1,164 @@
+"use client";
+
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+
+type Props = {
+  onSuccess?: () => void;
+};
+
+export default function ListingForm({ onSuccess }: Props) {
+  const [loading, setLoading] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
+  const [price, setPrice] = useState("");
+  const [propertyType, setPropertyType] = useState<
+    "Apartment" | "House" | "Commercial"
+  >("Apartment");
+  const [status, setStatus] = useState<"For Sale" | "For Rent">("For Sale");
+  const [imageUrls, setImageUrls] = useState<string[]>([""]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+
+    const token = localStorage.getItem("access_token");
+    if (!token) return alert("Missing token");
+
+    const res = await fetch("http://localhost:4000/api/listings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        title,
+        description,
+        location,
+        price: Number(price),
+        property_type: propertyType,
+        status,
+        images: imageUrls.filter((url) => url.trim() !== ""),
+      }),
+    });
+
+    if (res.ok) {
+      onSuccess?.();
+    } else {
+      const error = await res.json();
+      alert(error.error || "Failed to create listing");
+    }
+
+    setLoading(false);
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="title">Title</Label>
+        <Input
+          id="title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="description">Description</Label>
+        <Textarea
+          id="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="location">Location</Label>
+        <Input
+          id="location"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="price">Price</Label>
+        <Input
+          id="price"
+          type="number"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          required
+        />
+      </div>
+
+      <div>
+        <Label>Property Type</Label>
+        <Select
+          value={propertyType}
+          onValueChange={(v) => setPropertyType(v as any)}
+        >
+          <SelectTrigger className="w-full">{propertyType}</SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Apartment">Apartment</SelectItem>
+            <SelectItem value="House">House</SelectItem>
+            <SelectItem value="Commercial">Commercial</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label>Status</Label>
+        <Select value={status} onValueChange={(v) => setStatus(v as any)}>
+          <SelectTrigger className="w-full">{status}</SelectTrigger>
+          <SelectContent>
+            <SelectItem value="For Sale">For Sale</SelectItem>
+            <SelectItem value="For Rent">For Rent</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label>Image URLs</Label>
+        <div className="space-y-2">
+          {imageUrls.map((url, i) => (
+            <Input
+              key={i}
+              placeholder={`Image ${i + 1}`}
+              value={url}
+              onChange={(e) => {
+                const updated = [...imageUrls];
+                updated[i] = e.target.value;
+                setImageUrls(updated);
+              }}
+            />
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setImageUrls([...imageUrls, ""])}
+          >
+            Add Another Image
+          </Button>
+        </div>
+      </div>
+
+      <Button type="submit" disabled={loading} className="w-full">
+        {loading ? "Creating..." : "Create Listing"}
+      </Button>
+    </form>
+  );
+}

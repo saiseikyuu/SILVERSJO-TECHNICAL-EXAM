@@ -1,3 +1,4 @@
+// middleware/requireAuth.ts
 import { Request, Response, NextFunction } from 'express';
 import { supabaseAdmin } from '../lib/supabase';
 
@@ -9,12 +10,12 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
   }
 
   const token = authHeader.split(' ')[1];
-  const { data: user, error } = await supabaseAdmin.auth.getUser(token);
+  const { data, error } = await supabaseAdmin.auth.getUser(token);
 
-  if (error || !user) {
+  if (error || !data?.user) {
     return res.status(401).json({ error: 'Invalid token' });
   }
 
-  req.user = user;
+  req.user = data.user; // ✅ This is the actual User object
   next();
 }
