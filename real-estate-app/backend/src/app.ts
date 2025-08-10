@@ -12,7 +12,7 @@ dotenv.config();
 
 const app = express();
 
-// ✅ Clean CORS setup for production
+// ✅ Safe CORS setup for multiple origins
 const allowedOrigins = process.env.CORS_ORIGIN?.split(",") || [];
 
 app.use(
@@ -21,14 +21,13 @@ app.use(
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        console.log("Blocked CORS origin:", origin);
-        callback(new Error("Not allowed by CORS"));
+        console.warn("❌ Blocked CORS origin:", origin);
+        callback(null, false); // ✅ Gracefully reject without throwing
       }
     },
     credentials: true,
   })
 );
-
 
 app.use(express.json());
 
