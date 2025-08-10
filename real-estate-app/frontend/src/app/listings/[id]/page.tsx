@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import Image from "next/image";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
@@ -130,7 +131,7 @@ export default function ListingDetailPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {listing.images?.length > 0 ? (
             listing.images.map((url, index) => (
-              <img
+              <Image
                 key={index}
                 src={url}
                 alt={`Image ${index + 1}`}
@@ -138,7 +139,7 @@ export default function ListingDetailPage() {
               />
             ))
           ) : (
-            <img
+            <Image
               src="/placeholder.jpg"
               alt="Placeholder"
               className="w-full h-48 object-cover rounded-md border"
