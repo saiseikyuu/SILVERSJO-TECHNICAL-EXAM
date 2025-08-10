@@ -1,6 +1,5 @@
-// index.ts
 import serverless from "serverless-http";
-import app from "./app";
+import app from "./app.js"; // ✅ Use `.js` extension for ESM
 
 const isLocal = process.env.LOCAL === "true";
 

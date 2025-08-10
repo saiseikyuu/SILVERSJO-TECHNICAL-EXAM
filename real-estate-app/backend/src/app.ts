@@ -2,12 +2,12 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import listingsRouter from "./routes/listings";
-import uploadsRouter from "./routes/uploads";
-import authRouter from "./routes/auth/signup";
-import loginRouter from "./routes/auth/login";
-import autocompleteRoute from "./routes/autocomplete";
-import inquiriesRoute from "./routes/inquiries";
+import listingsRouter from "./routes/listings.js";
+import uploadsRouter from "./routes/uploads.js";
+import authRouter from "./routes/auth/signup.js";
+import loginRouter from "./routes/auth/login.js";
+import autocompleteRoute from "./routes/autocomplete.js";
+import inquiriesRoute from "./routes/inquiries.js";
 
 dotenv.config();
 
