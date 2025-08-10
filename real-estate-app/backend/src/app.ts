@@ -12,24 +12,33 @@ dotenv.config();
 
 const app = express();
 
-// ✅ Safe CORS setup for multiple origins
-const allowedOrigins = process.env.CORS_ORIGIN?.split(",") || [];
+// ✅ Parse and trim allowed origins
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map(o => o.trim()).filter(Boolean)
+  : [];
+
+// ✅ Optional: allow all *.vercel.app previews
+const vercelPreviewRegex = /^https:\/\/[a-z0-9-]+\.vercel\.app$/;
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (
+        !origin || // requests without origin (like curl/Postman)
+        allowedOrigins.includes(origin) || // exact match
+        vercelPreviewRegex.test(origin) // match Vercel preview domains
+      ) {
         callback(null, true);
       } else {
-        console.warn("❌ Blocked CORS origin:", origin);
-        callback(null, false); // ✅ Gracefully reject without crashing
+        if (process.env.NODE_ENV === "development") {
+          console.warn("❌ Blocked CORS origin:", origin);
+        }
+        callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
   })
 );
-
-
 
 app.use(express.json());
 
