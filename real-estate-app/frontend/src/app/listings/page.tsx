@@ -52,7 +52,10 @@ export default function ListingsPage() {
       limit: limit.toString(),
     });
 
-    const res = await fetch(`http://localhost:4000/api/listings?${params}`);
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE}/api/listings?${params}`
+    );
+
     const data = await res.json();
 
     setListings(data.data || []);
@@ -70,12 +73,15 @@ export default function ListingsPage() {
     if (!token) return alert("Missing access token");
 
     try {
-      const res = await fetch(`http://localhost:4000/api/listings/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE}/api/listings/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (res.ok) {
         setListings((prev) => prev.filter((l) => l.id !== id));

@@ -36,11 +36,14 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:4000/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, role: "user" }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE}/api/auth/signup`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...data, role: "user" }),
+        }
+      );
 
       const result = await res.json();
 
@@ -50,11 +53,14 @@ export default function RegisterPage() {
         return;
       }
 
-      const loginRes = await fetch("http://localhost:4000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const loginRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE}/api/auth/login`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        }
+      );
 
       const loginData = await loginRes.json();
 

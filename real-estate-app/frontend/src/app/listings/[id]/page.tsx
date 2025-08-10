@@ -35,7 +35,9 @@ export default function ListingDetailPage() {
 
   useEffect(() => {
     async function fetchListing() {
-      const res = await fetch(`http://localhost:4000/api/listings/${id}`);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE}/api/listings/${id}`
+      );
       const data = await res.json();
       setListing(data);
       setLoading(false);
@@ -79,11 +81,14 @@ export default function ListingDetailPage() {
       listing_id: listing?.id,
     };
 
-    const res = await fetch("http://localhost:4000/api/inquiries", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE}/api/inquiries`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
 
     if (res.ok) {
       toast.success("Inquiry sent successfully!");

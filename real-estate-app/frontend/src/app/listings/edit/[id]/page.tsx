@@ -43,7 +43,9 @@ export default function EditListingPage() {
   //  Fetch existing listing
   useEffect(() => {
     async function fetchListing() {
-      const res = await fetch(`http://localhost:4000/api/listings/${id}`);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE}/api/listings/${id}`
+      );
       const data = await res.json();
 
       setTitle(data.title);
@@ -68,9 +70,9 @@ export default function EditListingPage() {
     const delay = setTimeout(() => {
       if (locationInput.length >= 3) {
         fetch(
-          `http://localhost:4000/api/autocomplete?q=${encodeURIComponent(
-            locationInput
-          )}`
+          `${
+            process.env.NEXT_PUBLIC_API_BASE
+          }/api/autocomplete?q=${encodeURIComponent(locationInput)}`
         )
           .then((res) => res.json())
           .then((data) => setLocationSuggestions(data))
@@ -120,14 +122,17 @@ export default function EditListingPage() {
       images: imageUrls.filter((url) => url.trim() !== ""),
     };
 
-    const res = await fetch(`http://localhost:4000/api/listings/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE}/api/listings/${id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
 
     if (res.ok) {
       toast.success("Listing updated!");

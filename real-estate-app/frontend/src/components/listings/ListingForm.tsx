@@ -44,9 +44,9 @@ export default function ListingForm({ onSuccess }: Props) {
     const delay = setTimeout(() => {
       if (locationInput.length >= 3) {
         fetch(
-          `http://localhost:4000/api/autocomplete?q=${encodeURIComponent(
-            locationInput
-          )}`
+          `${
+            process.env.NEXT_PUBLIC_API_BASE
+          }/api/autocomplete?q=${encodeURIComponent(locationInput)}`
         )
           .then((res) => res.json())
           .then((data) => setLocationSuggestions(data))
@@ -82,26 +82,29 @@ export default function ListingForm({ onSuccess }: Props) {
       return;
     }
 
-    const res = await fetch("http://localhost:4000/api/listings", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        title,
-        description,
-        location: selectedLocation.place_name,
-        coordinates: {
-          lat: selectedLocation.coordinates[1],
-          lng: selectedLocation.coordinates[0],
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE}/api/listings`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        price: Number(price),
-        property_type: propertyType,
-        status,
-        images: imageUrls.filter((url) => url.trim() !== ""),
-      }),
-    });
+        body: JSON.stringify({
+          title,
+          description,
+          location: selectedLocation.place_name,
+          coordinates: {
+            lat: selectedLocation.coordinates[1],
+            lng: selectedLocation.coordinates[0],
+          },
+          price: Number(price),
+          property_type: propertyType,
+          status,
+          images: imageUrls.filter((url) => url.trim() !== ""),
+        }),
+      }
+    );
 
     if (res.ok) {
       toast.success("Listing created successfully!");
