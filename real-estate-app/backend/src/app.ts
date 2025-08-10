@@ -6,6 +6,7 @@ import listingsRouter from './routes/listings'
 import uploadsRouter from './routes/uploads'
 import authRouter from './routes/auth/signup' 
 import loginRouter from './routes/auth/login' 
+import autocompleteRoute from "./routes/autocomplete";
 
 dotenv.config()
 
@@ -24,5 +25,6 @@ app.use('/api/listings', listingsRouter)
 app.use('/api/uploads', uploadsRouter)
 app.use('/api/auth', authRouter) 
 app.use('/api/auth', loginRouter) 
+app.use("/api/autocomplete", autocompleteRoute);
 
 export default app

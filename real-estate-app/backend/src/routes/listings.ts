@@ -6,7 +6,7 @@ import { z } from 'zod';
 
 const router = Router();
 
-// Zod schema for validating listing data
+// ✅ Updated Zod schema with coordinates
 const listingSchema = z.object({
   title: z.string(),
   description: z.string(),
@@ -15,6 +15,10 @@ const listingSchema = z.object({
   property_type: z.enum(['Apartment', 'House', 'Commercial']),
   status: z.enum(['For Sale', 'For Rent']),
   images: z.array(z.string()).optional(),
+  coordinates: z.object({
+    lat: z.number(),
+    lng: z.number(),
+  }),
 });
 
 // GET /api/listings — search, filter, paginate
@@ -60,7 +64,7 @@ router.get('/', async (req: Request, res: Response) => {
   });
 });
 
-// ✅ FIXED: GET /api/listings/:id — fetch single listing
+// GET /api/listings/:id — fetch single listing
 router.get('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -84,6 +88,8 @@ router.post('/', requireAuth, requireAdmin, async (req: Request, res: Response) 
   if (!parse.success) {
     return res.status(400).json({ error: parse.error.issues });
   }
+
+  console.log("Creating listing with:", parse.data); // ✅ Debug log
 
   const { data, error } = await supabaseAdmin
     .from('listings')
@@ -116,7 +122,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req: Request, res: Response
   res.json(data);
 });
 
-// ✅ NEW: PATCH /api/listings/:id — partial update (admin only)
+// PATCH /api/listings/:id — partial update (admin only)
 router.patch('/:id', requireAuth, requireAdmin, async (req: Request, res: Response) => {
   const { id } = req.params;
   const parse = listingSchema.partial().safeParse(req.body);

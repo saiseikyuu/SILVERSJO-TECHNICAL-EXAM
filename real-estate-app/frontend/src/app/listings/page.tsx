@@ -13,6 +13,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import GlobalListingsMap from "@/components/map/GlobalListingsMap";
 
 type Listing = {
   id: string;
@@ -23,6 +24,7 @@ type Listing = {
   property_type: "Apartment" | "House" | "Commercial";
   status: "For Sale" | "For Rent";
   images: string[];
+  coordinates?: { lat: number; lng: number }; // ✅ Required for map
 };
 
 export default function ListingsPage() {
@@ -142,6 +144,11 @@ export default function ListingsPage() {
           </Button>
         </div>
       </div>
+
+      {/* Global Map */}
+      {!loading && listings.length > 0 && (
+        <GlobalListingsMap listings={listings} />
+      )}
 
       {/* Listings Grid */}
       {loading ? (

@@ -22,10 +22,7 @@ export default function Navbar() {
         </Button>
 
         {role === "admin" && (
-          <Button
-            variant="ghost"
-            onClick={() => router.push("/admin/listings")}
-          >
+          <Button variant="ghost" onClick={() => router.push("/dashboard")}>
             Manage Listings
           </Button>
         )}

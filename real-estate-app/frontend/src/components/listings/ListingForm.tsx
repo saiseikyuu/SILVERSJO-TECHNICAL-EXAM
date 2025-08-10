@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -16,11 +16,21 @@ type Props = {
   onSuccess?: () => void;
 };
 
+type LocationSuggestion = {
+  place_name: string;
+  coordinates: [number, number]; // [lng, lat]
+};
+
 export default function ListingForm({ onSuccess }: Props) {
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [location, setLocation] = useState("");
+  const [locationInput, setLocationInput] = useState("");
+  const [locationSuggestions, setLocationSuggestions] = useState<
+    LocationSuggestion[]
+  >([]);
+  const [selectedLocation, setSelectedLocation] =
+    useState<LocationSuggestion | null>(null);
   const [price, setPrice] = useState("");
   const [propertyType, setPropertyType] = useState<
     "Apartment" | "House" | "Commercial"
@@ -28,12 +38,51 @@ export default function ListingForm({ onSuccess }: Props) {
   const [status, setStatus] = useState<"For Sale" | "For Rent">("For Sale");
   const [imageUrls, setImageUrls] = useState<string[]>([""]);
 
+  // Fetch autocomplete suggestions
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      if (locationInput.length >= 3) {
+        fetch(
+          `http://localhost:4000/api/autocomplete?q=${encodeURIComponent(
+            locationInput
+          )}`
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            console.log("Suggestions:", data);
+            setLocationSuggestions(data);
+          })
+          .catch(() => setLocationSuggestions([]));
+      } else {
+        setLocationSuggestions([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(delay);
+  }, [locationInput]);
+
+  function handleSelectSuggestion(suggestion: LocationSuggestion) {
+    setSelectedLocation(suggestion);
+    setLocationInput(suggestion.place_name);
+    setLocationSuggestions([]);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
 
     const token = localStorage.getItem("access_token");
-    if (!token) return alert("Missing token");
+    if (!token) {
+      alert("Missing token");
+      setLoading(false);
+      return;
+    }
+
+    if (!selectedLocation) {
+      alert("Please select a location from the suggestions.");
+      setLoading(false);
+      return;
+    }
 
     const res = await fetch("http://localhost:4000/api/listings", {
       method: "POST",
@@ -44,7 +93,11 @@ export default function ListingForm({ onSuccess }: Props) {
       body: JSON.stringify({
         title,
         description,
-        location,
+        location: selectedLocation.place_name,
+        coordinates: {
+          lat: selectedLocation.coordinates[1],
+          lng: selectedLocation.coordinates[0],
+        },
         price: Number(price),
         property_type: propertyType,
         status,
@@ -63,7 +116,7 @@ export default function ListingForm({ onSuccess }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <Label htmlFor="title">Title</Label>
         <Input
@@ -88,10 +141,27 @@ export default function ListingForm({ onSuccess }: Props) {
         <Label htmlFor="location">Location</Label>
         <Input
           id="location"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
+          value={locationInput}
+          onChange={(e) => {
+            setLocationInput(e.target.value);
+            setSelectedLocation(null);
+          }}
+          placeholder="Start typing a city or address..."
           required
         />
+        {locationSuggestions.length > 0 && (
+          <ul className="bg-white border rounded shadow mt-2 max-h-60 overflow-auto">
+            {locationSuggestions.map((s, i) => (
+              <li
+                key={i}
+                className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                onClick={() => handleSelectSuggestion(s)}
+              >
+                {s.place_name}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div>

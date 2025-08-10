@@ -27,8 +27,8 @@ export default function DashboardPage() {
         <h2 className="text-xl font-semibold">Dashboard</h2>
         <p>
           {role === "admin"
-            ? "👑 Welcome, Admin! You have full access."
-            : "👋 Welcome, User! You can browse listings."}
+            ? " Welcome, Admin! You have full access."
+            : " Welcome, User! You can browse listings."}
         </p>
       </Card>
 
