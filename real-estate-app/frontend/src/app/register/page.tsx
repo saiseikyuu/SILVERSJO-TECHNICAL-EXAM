@@ -69,7 +69,7 @@ export default function RegisterPage() {
 
       toast.success("Account created successfully!");
       router.push("/dashboard");
-    } catch (err) {
+    } catch {
       toast.error("Network error or server unreachable");
     }
 

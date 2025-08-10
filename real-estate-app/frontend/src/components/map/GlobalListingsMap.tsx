@@ -47,7 +47,7 @@ export default function GlobalListingsMap({ listings }: Props) {
       const coords = listing.coordinates;
       if (!coords) return;
 
-      const marker = new mapboxgl.Marker({ color: "#3b82f6" })
+      new mapboxgl.Marker({ color: "#3b82f6" })
         .setLngLat([coords.lng, coords.lat])
         .setPopup(
           new mapboxgl.Popup({ offset: 25 }).setHTML(`

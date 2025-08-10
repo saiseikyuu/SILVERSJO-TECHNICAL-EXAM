@@ -14,6 +14,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import GlobalListingsMap from "@/components/map/GlobalListingsMap";
+import Image from "next/image";
 
 type Listing = {
   id: string;
@@ -178,7 +179,7 @@ export default function ListingsPage() {
               >
                 {/* Image */}
                 <div className="aspect-[4/3] bg-gray-100 overflow-hidden">
-                  <img
+                  <Image
                     src={listing.images?.[0] || "/placeholder.jpg"}
                     alt={listing.title}
                     className="w-full h-full object-cover"
