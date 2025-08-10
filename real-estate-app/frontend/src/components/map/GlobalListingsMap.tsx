@@ -1,49 +1,54 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-
-mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
-
-type Listing = {
-  id: string;
-  title: string;
-  location: string;
-  coordinates: {
-    lat: number;
-    lng: number;
-  };
-};
+import { Listing } from "@/app/types/listing";
 
 type Props = {
   listings: Listing[];
 };
 
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
+
 export default function GlobalListingsMap({ listings }: Props) {
-  const mapRef = useRef<mapboxgl.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
-    mapRef.current = new mapboxgl.Map({
+    const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/streets-v11",
-      center: [121.0437, 14.4964], // Default center (Metro Manila)
-      zoom: 11,
+      center: [121.0437, 14.676], // Default center: Metro Manila
+      zoom: 10,
     });
 
-    mapRef.current.addControl(new mapboxgl.NavigationControl());
+    map.addControl(new mapboxgl.NavigationControl());
+    map.on("load", () => setMapLoaded(true));
 
-    // Fit bounds to all listings
+    mapRef.current = map;
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      setMapLoaded(false);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+
     const bounds = new mapboxgl.LngLatBounds();
+
     listings.forEach((listing) => {
-      const { lat, lng } = listing.coordinates;
-      bounds.extend([lng, lat]);
+      const coords = listing.coordinates;
+      if (!coords) return;
 
       const marker = new mapboxgl.Marker({ color: "#3b82f6" })
-        .setLngLat([lng, lat])
+        .setLngLat([coords.lng, coords.lat])
         .setPopup(
           new mapboxgl.Popup({ offset: 25 }).setHTML(`
             <div style="font-size: 14px; line-height: 1.4;">
@@ -57,17 +62,17 @@ export default function GlobalListingsMap({ listings }: Props) {
           `)
         )
         .addTo(mapRef.current!);
+
+      bounds.extend([coords.lng, coords.lat]);
     });
 
-    mapRef.current.fitBounds(bounds, { padding: 60, maxZoom: 14 });
-
-    return () => {
-      mapRef.current?.remove();
-    };
-  }, [listings]);
+    if (!bounds.isEmpty()) {
+      mapRef.current.fitBounds(bounds, { padding: 50, maxZoom: 14 });
+    }
+  }, [listings, mapLoaded]);
 
   return (
-    <div className="w-full h-[500px] rounded-lg overflow-hidden border">
+    <div className="w-full h-[500px] rounded-lg overflow-hidden shadow">
       <div ref={mapContainerRef} className="w-full h-full" />
     </div>
   );
