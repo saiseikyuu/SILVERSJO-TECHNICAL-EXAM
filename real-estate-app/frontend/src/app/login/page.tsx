@@ -55,7 +55,7 @@ export default function LoginPage() {
 
       toast.success("Logged in successfully!");
       router.push("/dashboard");
-    } catch (err) {
+    } catch {
       toast.error("Network error or server unreachable");
     }
 

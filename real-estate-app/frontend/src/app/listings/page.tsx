@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -40,7 +40,7 @@ export default function ListingsPage() {
   const { role } = useAuth();
   const router = useRouter();
 
-  async function fetchListings() {
+  const fetchListings = useCallback(async () => {
     setLoading(true);
 
     const params = new URLSearchParams({
@@ -57,7 +57,7 @@ export default function ListingsPage() {
     setListings(data.data || []);
     setTotal(data.total || 0);
     setLoading(false);
-  }
+  }, [q, type, status, page]);
 
   async function handleDelete(id: string) {
     const confirmed = window.confirm(
@@ -95,7 +95,7 @@ export default function ListingsPage() {
 
   useEffect(() => {
     fetchListings();
-  }, [q, type, status, page]);
+  }, [fetchListings]);
 
   const totalPages = Math.ceil(total / limit);
 
