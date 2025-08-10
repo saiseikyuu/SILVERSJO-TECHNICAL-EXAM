@@ -1,9 +1,100 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
+import { supabaseAdmin } from '../lib/supabase';
+import { requireAuth } from '../middleware/requireAuth';
+import { requireAdmin } from '../middleware/requireAdmin';
+import { z } from 'zod';
 
 const router = Router();
 
-router.get('/', (_, res) => {
-  res.json({ message: 'Listings endpoint works!' });
+const listingSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  location: z.string(),
+  price: z.number(),
+  property_type: z.enum(['Apartment', 'House', 'Commercial']),
+  status: z.enum(['For Sale', 'For Rent']),
+  images: z.array(z.string()).optional(),
+});
+
+router.get('/', async (req: Request, res: Response) => {
+  const {
+    q,
+    minPrice,
+    maxPrice,
+    type,
+    status,
+    page = 1,
+    limit = 10,
+  } = req.query;
+
+  let query = supabaseAdmin.from('listings').select('*', { count: 'exact' });
+
+  if (q) {
+    query = query.ilike('title', `%${q}%`).or(`description.ilike.%${q}%,location.ilike.%${q}%`);
+  }
+  if (minPrice) query = query.gte('price', Number(minPrice));
+  if (maxPrice) query = query.lte('price', Number(maxPrice));
+  if (type) query = query.eq('property_type', type);
+  if (status) query = query.eq('status', status);
+
+  const start = (Number(page) - 1) * Number(limit);
+  const end = start + Number(limit) - 1;
+
+  query = query.range(start, end);
+
+  const { data, count, error } = await query;
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  res.json({
+    data,
+    total: count,
+    page: Number(page),
+    limit: Number(limit),
+  });
+});
+
+router.get('/:id', async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { data, error } = await supabaseAdmin.from('listings').select('*').eq('id', id).single();
+
+  if (error) return res.status(404).json({ error: 'Listing not found' });
+  res.json(data);
+});
+
+router.post('/', requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  const parse = listingSchema.safeParse(req.body);
+  if (!parse.success) {
+  return res.status(400).json({ error: parse.error.issues });
+}
+
+
+  const { data, error } = await supabaseAdmin.from('listings').insert([parse.data]).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+
+  res.status(201).json(data);
+});
+
+router.put('/:id', requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const parse = listingSchema.partial().safeParse(req.body);
+  if (!parse.success) {
+  return res.status(400).json({ error: parse.error.issues });
+}
+
+
+  const { data, error } = await supabaseAdmin.from('listings').update(parse.data).eq('id', id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+
+  res.json(data);
+});
+
+router.delete('/:id', requireAuth, requireAdmin, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { error } = await supabaseAdmin.from('listings').delete().eq('id', id);
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(204).send();
 });
 
 export default router;
