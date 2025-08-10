@@ -127,23 +127,34 @@ export default function ListingDetailPage() {
       </div>
 
       {/* Image Gallery */}
+      {/* Image Gallery */}
       <Card className="p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {listing.images?.length > 0 ? (
             listing.images.map((url, index) => (
-              <Image
+              <div
                 key={index}
-                src={url}
-                alt={`Image ${index + 1}`}
-                className="w-full h-48 object-cover rounded-md border hover:scale-105 transition-transform"
-              />
+                className="relative w-full h-48 rounded-md overflow-hidden border hover:scale-105 transition-transform"
+              >
+                <Image
+                  src={url}
+                  alt={`Image ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+              </div>
             ))
           ) : (
-            <Image
-              src="/placeholder.jpg"
-              alt="Placeholder"
-              className="w-full h-48 object-cover rounded-md border"
-            />
+            <div className="relative w-full h-48 rounded-md overflow-hidden border">
+              <Image
+                src="/placeholder.jpg"
+                alt="Placeholder"
+                fill
+                className="object-cover"
+                sizes="100vw"
+              />
+            </div>
           )}
         </div>
       </Card>

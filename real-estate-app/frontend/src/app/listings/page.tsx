@@ -178,11 +178,13 @@ export default function ListingsPage() {
                 className="flex flex-col justify-between h-full rounded-xl border shadow-sm hover:shadow-md transition overflow-hidden"
               >
                 {/* Image */}
-                <div className="aspect-[4/3] bg-gray-100 overflow-hidden">
+                <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
                   <Image
                     src={listing.images?.[0] || "/placeholder.jpg"}
                     alt={listing.title}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                   />
                 </div>
 
