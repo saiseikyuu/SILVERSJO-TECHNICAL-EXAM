@@ -22,12 +22,13 @@ app.use(
         callback(null, true);
       } else {
         console.warn("❌ Blocked CORS origin:", origin);
-        callback(null, false); // ✅ Gracefully reject without throwing
+        callback(null, false); // ✅ Gracefully reject without crashing
       }
     },
     credentials: true,
   })
 );
+
 
 app.use(express.json());
 
