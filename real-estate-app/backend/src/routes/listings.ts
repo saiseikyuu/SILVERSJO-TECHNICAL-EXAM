@@ -6,6 +6,7 @@ import { z } from 'zod';
 
 const router = Router();
 
+// Zod schema for validating listing data
 const listingSchema = z.object({
   title: z.string(),
   description: z.string(),
@@ -16,6 +17,7 @@ const listingSchema = z.object({
   images: z.array(z.string()).optional(),
 });
 
+// GET /api/listings — search, filter, paginate
 router.get('/', async (req: Request, res: Response) => {
   const {
     q,
@@ -27,19 +29,23 @@ router.get('/', async (req: Request, res: Response) => {
     limit = 10,
   } = req.query;
 
-  let query = supabaseAdmin.from('listings').select('*', { count: 'exact' });
+  let query = supabaseAdmin
+    .from('listings')
+    .select('*', { count: 'exact' }); // include total count
 
+  // Apply filters
   if (q) {
-    query = query.ilike('title', `%${q}%`).or(`description.ilike.%${q}%,location.ilike.%${q}%`);
+    query = query.ilike('title', `%${q}%`)
+      .or(`description.ilike.%${q}%,location.ilike.%${q}%`);
   }
   if (minPrice) query = query.gte('price', Number(minPrice));
   if (maxPrice) query = query.lte('price', Number(maxPrice));
   if (type) query = query.eq('property_type', type);
   if (status) query = query.eq('status', status);
 
+  // Pagination
   const start = (Number(page) - 1) * Number(limit);
   const end = start + Number(limit) - 1;
-
   query = query.range(start, end);
 
   const { data, count, error } = await query;
@@ -54,44 +60,64 @@ router.get('/', async (req: Request, res: Response) => {
   });
 });
 
+// GET /api/listings/:id — fetch single listing
 router.get('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { data, error } = await supabaseAdmin.from('listings').select('*').eq('id', id).single();
+  const { data, error } = await supabaseAdmin
+    .from('listings')
+    .select('*')
+    .eq('id', id)
+    .single();
 
   if (error) return res.status(404).json({ error: 'Listing not found' });
   res.json(data);
 });
 
+// POST /api/listings — create listing (admin only)
 router.post('/', requireAuth, requireAdmin, async (req: Request, res: Response) => {
   const parse = listingSchema.safeParse(req.body);
   if (!parse.success) {
-  return res.status(400).json({ error: parse.error.issues });
-}
+    return res.status(400).json({ error: parse.error.issues });
+  }
 
+  const { data, error } = await supabaseAdmin
+    .from('listings')
+    .insert([parse.data])
+    .select()
+    .single();
 
-  const { data, error } = await supabaseAdmin.from('listings').insert([parse.data]).select().single();
   if (error) return res.status(500).json({ error: error.message });
 
   res.status(201).json(data);
 });
 
+// PUT /api/listings/:id — update listing (admin only)
 router.put('/:id', requireAuth, requireAdmin, async (req: Request, res: Response) => {
   const { id } = req.params;
   const parse = listingSchema.partial().safeParse(req.body);
   if (!parse.success) {
-  return res.status(400).json({ error: parse.error.issues });
-}
+    return res.status(400).json({ error: parse.error.issues });
+  }
 
+  const { data, error } = await supabaseAdmin
+    .from('listings')
+    .update(parse.data)
+    .eq('id', id)
+    .select()
+    .single();
 
-  const { data, error } = await supabaseAdmin.from('listings').update(parse.data).eq('id', id).select().single();
   if (error) return res.status(500).json({ error: error.message });
 
   res.json(data);
 });
 
+// DELETE /api/listings/:id — delete listing (admin only)
 router.delete('/:id', requireAuth, requireAdmin, async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { error } = await supabaseAdmin.from('listings').delete().eq('id', id);
+  const { error } = await supabaseAdmin
+    .from('listings')
+    .delete()
+    .eq('id', id);
 
   if (error) return res.status(500).json({ error: error.message });
   res.status(204).send();
