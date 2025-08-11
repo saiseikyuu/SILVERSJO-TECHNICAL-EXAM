@@ -87,6 +87,18 @@ A full-stack web application for browsing, searching, and managing real estate p
 ```bash
 git clone https://github.com/your-username/silversjo-real-estate.git
 cd silversjo-real-estate
+
+cd frontend
+pnpm install
+pnpm run dev
+
+
+cd backend
+pnpm install
+pnpm run dev
+
+
+
 ```
 
 # Frontend
