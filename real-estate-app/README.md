@@ -1,29 +1,104 @@
-# Silversjö Real Estate
+# 🏡 Silversjö Real Estate
 
-A full-stack web app for browsing and managing real estate listings, built with React, Node.js, and Supabase.
+A full-stack web application for browsing, searching, and managing real estate property listings. Built with React, Node.js, Supabase, and TypeScript — featuring user authentication, admin controls, and a clean mobile-first UI.
 
-## 🚀 Tech Stack
+---
 
-- Frontend: Next.js (React) + TypeScript (Vercel)
-- Backend: Node.js + Express + TypeScript (Railway or Vercel)
-- Database & Auth: Supabase (PostgreSQL, JWT)
-- Image Storage: Supabase Storage
+## 🚀 Live Demo
 
-## 📦 Features
+🔗 https://silversjo-technical-exam.vercel.app/ or https://silversjo-technical-exam-d588l5fg4-saiseikyuus-projects.vercel.app/
 
-- User authentication (Regular & Admin roles)
-- Property listing CRUD (Admin only)
-- Search & filtering by keyword, price, type, status
-- Responsive UI with pagination
-- Mapbox integration
-- Contact form
+---
 
-## 🛠️ Setup Instructions
+## 👥 Test Accounts
 
-### Backend
+### Admin User
+
+- **Email:** silversjo@gmail.com
+- **Password:** silversjo12345.
+
+### Regular
+
+    Create your own account.
+
+---
+
+## 📦 Tech Stack
+
+| Layer      | Tech                             |
+| ---------- | -------------------------------- |
+| Frontend   | React, Next.js, TypeScript       |
+| Backend    | Node.js, Express, TypeScript     |
+| Database   | Supabase (PostgreSQL)            |
+| Auth       | Supabase Auth (JWT)              |
+| Storage    | Supabase Storage (Images)        |
+| Deployment | Vercel (Frontend), Railway (API) |
+| Maps       | Mapbox Autocomplete (Bonus)      |
+
+---
+
+## ✨ FEATURES
+
+### 🔐 User Roles
+
+- Regular users can browse listings.
+- Admins can create, edit, and delete listings.
+
+### 🏘️ Property Listings
+
+- Title, Description, Location, Price, Type, Status, Images
+- Multiple image support
+- Timestamps for creation and updates
+
+### 🔍 Search & Filtering
+
+- Keyword search (title, description, location)
+- Filters: price range, property type, status
+- Pagination
+
+### 📱 Frontend UX
+
+- Mobile-first responsive design
+- Grid/List view toggle
+- Detail page for each listing
+- Login/Register pages
+- (Optional) Saved favorites dashboard
+
+### 🛠️ Backend API
+
+- RESTful endpoints with Express
+- Supabase client for DB and auth
+- Role-based access via JWT middleware
+- Image upload via Supabase Storage
+
+### 🗺️ Bonus Features
+
+- Mapbox autocomplete integration
+- CI/CD via Vercel and Railway
+- Contact form (optional)
+- Unit/integration tests (optional)
+
+---
+
+## 🧑‍💻 Local Development
+
+### 1. Clone the repo
 
 ```bash
-pnpm install
-pnpm build
-pnpm start
+git clone https://github.com/your-username/silversjo-real-estate.git
+cd silversjo-real-estate
 ```
+
+# Frontend
+
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+NEXT_PUBLIC_API_BASE=http://localhost:4000
+NEXT_PUBLIC_MAPBOX_TOKEN=your_mapbox_token
+
+# Backend
+
+SUPABASE_URL= your_supabase_url
+SUPABASE_SERVICE_ROLE_KEY=your_anon_key
+MAPBOX_TOKEN=your_mapbox_token
+PORT=PORT
