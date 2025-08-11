@@ -14,29 +14,41 @@ const app = express();
 
 // Log env for debugging in development
 if (process.env.NODE_ENV !== "production") {
-  console.log("CORS_ORIGIN:", process.env.CORS_ORIGIN);
+  console.log("CORS_ORIGIN from .env:", process.env.CORS_ORIGIN);
 }
 
-const allowedOrigins = process.env.CORS_ORIGIN
+// Prepare custom CORS list from .env (optional)
+const envAllowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map(o => o.trim()).filter(Boolean)
   : [];
 
-const vercelPreviewRegex = /^https:\/\/[a-z0-9-]+\.vercel\.app$/;
+// Regex to match Vercel preview and production deployments
+const vercelDomainRegex = /^https:\/\/[a-z0-9.-]+\.vercel\.app$/i;
+
+// Default allowed origins
+const defaultAllowedOrigins = [
+  "http://localhost:3000", // local dev
+  ...envAllowedOrigins,    // any from .env
+];
 
 // CORS middleware
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (
-        !origin || // allow non-browser requests
-        allowedOrigins.includes(origin) ||
-        vercelPreviewRegex.test(origin)
-      ) {
-        callback(null, true);
-      } else {
-        console.warn("❌ Blocked CORS origin:", origin);
-        callback(new Error("Not allowed by CORS"));
+      if (!origin) {
+        // Allow server-to-server or Postman requests
+        return callback(null, true);
       }
+
+      if (
+        defaultAllowedOrigins.includes(origin) ||
+        vercelDomainRegex.test(origin)
+      ) {
+        return callback(null, true);
+      }
+
+      console.warn("❌ Blocked CORS origin:", origin);
+      return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
   })
