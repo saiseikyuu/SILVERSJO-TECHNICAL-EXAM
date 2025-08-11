@@ -71,7 +71,7 @@ export default function EditListingPage() {
       if (locationInput.length >= 3) {
         fetch(
           `${
-            process.env.NEXT_PUBLIC_MAPBOX_TOKEN
+            process.env.NEXT_PUBLIC_API_BASE
           }/api/autocomplete?q=${encodeURIComponent(locationInput)}`
         )
           .then((res) => res.json())
