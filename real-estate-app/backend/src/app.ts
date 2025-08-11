@@ -12,26 +12,24 @@ dotenv.config();
 
 const app = express();
 
-// Log env for debugging in development
-if (process.env.NODE_ENV !== "production") {
-  console.log("CORS_ORIGIN from .env:", process.env.CORS_ORIGIN);
-}
+// ✅ Log CORS_ORIGIN for debugging (always)
+console.log("✅ Loaded CORS_ORIGIN:", process.env.CORS_ORIGIN);
 
-// Prepare custom CORS list from .env (optional)
+// ✅ Parse allowed origins from .env
 const envAllowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map(o => o.trim()).filter(Boolean)
   : [];
 
-// Regex to match Vercel preview and production deployments
+// ✅ Regex to match Vercel preview and production deployments
 const vercelDomainRegex = /^https:\/\/[a-z0-9.-]+\.vercel\.app$/i;
 
-// Default allowed origins
+// ✅ Default allowed origins
 const defaultAllowedOrigins = [
   "http://localhost:3000", // local dev
-  ...envAllowedOrigins,    // any from .env
+  ...envAllowedOrigins,    // from Railway env vars
 ];
 
-// CORS middleware
+// ✅ CORS middleware
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -48,7 +46,7 @@ app.use(
       }
 
       console.warn("❌ Blocked CORS origin:", origin);
-      return callback(new Error("Not allowed by CORS"));
+      return callback(null, false); // ✅ Graceful rejection
     },
     credentials: true,
   })
@@ -56,10 +54,10 @@ app.use(
 
 app.use(express.json());
 
-// Health check
+// ✅ Health check
 app.get("/health", (_, res) => res.send({ status: "ok" }));
 
-// Routes
+// ✅ Routes
 app.use("/api/listings", listingsRouter);
 app.use("/api/uploads", uploadsRouter);
 app.use("/api/auth", authRouter);
@@ -67,7 +65,7 @@ app.use("/api/auth", loginRouter);
 app.use("/api/autocomplete", autocompleteRoute);
 app.use("/api/inquiries", inquiriesRoute);
 
-// Global error handler
+// ✅ Global error handler
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error("🔥 Server error:", err.stack || err);
   res.status(500).json({ error: err.message || "Internal server error" });
