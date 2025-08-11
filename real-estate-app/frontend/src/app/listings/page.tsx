@@ -13,6 +13,13 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import GlobalListingsMap from "@/components/map/GlobalListingsMap";
 import Image from "next/image";
 
@@ -36,6 +43,8 @@ export default function ListingsPage() {
   const [status, setStatus] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const limit = 4;
 
   const { role } = useAuth();
@@ -63,18 +72,20 @@ export default function ListingsPage() {
     setLoading(false);
   }, [q, type, status, page]);
 
-  async function handleDelete(id: string) {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this listing?"
-    );
-    if (!confirmed) return;
+  function openDeleteModal(id: string) {
+    setPendingDeleteId(id);
+    setConfirmOpen(true);
+  }
+
+  async function confirmDelete() {
+    if (!pendingDeleteId) return;
 
     const token = localStorage.getItem("access_token");
     if (!token) return alert("Missing access token");
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE}/api/listings/${id}`,
+        `${process.env.NEXT_PUBLIC_API_BASE}/api/listings/${pendingDeleteId}`,
         {
           method: "DELETE",
           headers: {
@@ -84,7 +95,7 @@ export default function ListingsPage() {
       );
 
       if (res.ok) {
-        setListings((prev) => prev.filter((l) => l.id !== id));
+        setListings((prev) => prev.filter((l) => l.id !== pendingDeleteId));
       } else {
         const error = await res.json();
         console.error("Delete error:", error);
@@ -93,6 +104,9 @@ export default function ListingsPage() {
     } catch (err) {
       console.error("Delete request failed:", err);
       alert("Error deleting listing.");
+    } finally {
+      setConfirmOpen(false);
+      setPendingDeleteId(null);
     }
   }
 
@@ -106,15 +120,22 @@ export default function ListingsPage() {
 
   const totalPages = Math.ceil(total / limit);
 
+  function goToPage(pageNum: number) {
+    setPage(pageNum);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   return (
     <div className="max-w-screen-xl mx-auto px-4 py-10 space-y-12">
-      <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-900">
+      <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-900 dark:text-white">
         Silversjö Real Estate Listings
       </h1>
 
       {/* Filters */}
-      <section className="bg-white shadow-sm rounded-xl p-6 space-y-6">
-        <h2 className="text-lg font-semibold text-gray-800">Filter Listings</h2>
+      <section className="bg-white dark:bg-gray-800 shadow-sm rounded-xl p-6 space-y-6">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+          Filter Listings
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div>
             <Label htmlFor="search">Search</Label>
@@ -183,7 +204,6 @@ export default function ListingsPage() {
                 key={listing.id}
                 className="flex flex-col justify-between h-full rounded-xl border shadow-sm hover:shadow-md transition overflow-hidden"
               >
-                {/* Image */}
                 <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
                   <Image
                     src={listing.images?.[0] || "/placeholder.jpg"}
@@ -194,21 +214,21 @@ export default function ListingsPage() {
                   />
                 </div>
 
-                {/* Content */}
                 <div className="p-4 flex-1 flex flex-col justify-start space-y-2">
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                     {listing.title}
                   </h3>
-                  <p className="text-sm text-gray-600">{listing.location}</p>
-                  <p className="text-base font-medium text-gray-800">
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    {listing.location}
+                  </p>
+                  <p className="text-base font-medium text-gray-800 dark:text-white">
                     ₱{listing.price.toLocaleString()}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {listing.property_type} · {listing.status}
                   </p>
                 </div>
 
-                {/* Actions */}
                 <div className="px-4 pb-4 pt-2 flex flex-wrap gap-2">
                   <Button
                     variant="outline"
@@ -230,7 +250,7 @@ export default function ListingsPage() {
                       <Button
                         variant="destructive"
                         className="flex-1 text-sm"
-                        onClick={() => handleDelete(listing.id)}
+                        onClick={() => openDeleteModal(listing.id)}
                       >
                         Delete
                       </Button>
@@ -244,12 +264,12 @@ export default function ListingsPage() {
       </section>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {totalPages >= 1 && (
         <section className="flex justify-center items-center gap-2 mt-8 flex-wrap">
           <Button
             variant="outline"
             disabled={page === 1}
-            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+            onClick={() => goToPage(page - 1)}
           >
             Previous
           </Button>
@@ -260,7 +280,7 @@ export default function ListingsPage() {
               <Button
                 key={pageNum}
                 variant={page === pageNum ? "default" : "outline"}
-                onClick={() => setPage(pageNum)}
+                onClick={() => goToPage(pageNum)}
                 className="w-10 h-10 p-0 text-sm"
               >
                 {pageNum}
@@ -271,12 +291,33 @@ export default function ListingsPage() {
           <Button
             variant="outline"
             disabled={page >= totalPages}
-            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+            onClick={() => goToPage(page + 1)}
           >
             Next
           </Button>
         </section>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              Are you sure you want to delete this listing? This action cannot
+              be undone.
+            </p>
+          </DialogHeader>
+          <DialogFooter className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

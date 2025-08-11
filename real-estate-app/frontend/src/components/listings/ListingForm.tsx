@@ -45,7 +45,7 @@ export default function ListingForm({ onSuccess }: Props) {
       if (locationInput.length >= 3) {
         fetch(
           `${
-            process.env.NEXT_PUBLIC_API_BASE
+            process.env.NEXT_PUBLIC_MAPBOX_TOKEN
           }/api/autocomplete?q=${encodeURIComponent(locationInput)}`
         )
           .then((res) => res.json())

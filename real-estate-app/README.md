@@ -1,13 +1,29 @@
-# Real Estate App — Full Stack Project
+# Silversjö Real Estate
 
-This monorepo contains a full-stack real estate listing application built with:
+A full-stack web app for browsing and managing real estate listings, built with React, Node.js, and Supabase.
 
-- **Frontend**: Next.js + TypeScript
-- **Backend**: Express + TypeScript (serverless-ready)
-- **Database/Auth/Storage**: Supabase (PostgreSQL)
-- **Deployment**: Vercel (frontend ) , Railway (backend)
+## 🚀 Tech Stack
 
-## Structure
+- Frontend: Next.js (React) + TypeScript (Vercel)
+- Backend: Node.js + Express + TypeScript (Railway or Vercel)
+- Database & Auth: Supabase (PostgreSQL, JWT)
+- Image Storage: Supabase Storage
 
-- `frontend/`: React app with listing UI, auth, and admin dashboard
-- `backend/`: REST API with listing CRUD, auth middleware, and image uploads
+## 📦 Features
+
+- User authentication (Regular & Admin roles)
+- Property listing CRUD (Admin only)
+- Search & filtering by keyword, price, type, status
+- Responsive UI with pagination
+- Mapbox integration
+- Contact form
+
+## 🛠️ Setup Instructions
+
+### Backend
+
+```bash
+pnpm install
+pnpm build
+pnpm start
+```
