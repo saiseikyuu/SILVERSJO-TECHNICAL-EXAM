@@ -9,8 +9,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 import ListingForm from "@/components/listings/ListingForm";
 
 export default function DashboardPage() {
@@ -37,11 +39,35 @@ export default function DashboardPage() {
           <DialogTrigger asChild>
             <Button className="w-full">+ Add Listing</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-xl">
-            <DialogHeader>
-              <DialogTitle>Create New Listing</DialogTitle>
+          <DialogContent
+            className="
+              sm:max-w-xl
+              w-full
+              sm:rounded-2xl
+              p-0
+              overflow-hidden
+            "
+          >
+            {/* ✅ Fixed Header Layout */}
+            <DialogHeader className="sticky top-0 z-10 flex flex-row items-center justify-between bg-white p-4 border-b">
+              <DialogTitle className="text-lg sm:text-xl font-semibold">
+                Create New Listing
+              </DialogTitle>
+              <DialogClose asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-full"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </DialogClose>
             </DialogHeader>
-            <ListingForm onSuccess={() => setOpen(false)} />
+
+            {/* Scrollable content */}
+            <div className="max-h-[80vh] sm:max-h-[70vh] overflow-y-auto px-4 sm:px-6 pb-6">
+              <ListingForm onSuccess={() => setOpen(false)} />
+            </div>
           </DialogContent>
         </Dialog>
       )}
