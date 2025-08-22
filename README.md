@@ -4,7 +4,7 @@ A full-stack web application for browsing, searching, and managing real estate p
 
 ---
 
-## 🚀 Live Demo
+## Live Demo
 
 🔗 https://silversjo-technical-exam.vercel.app/
 
