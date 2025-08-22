@@ -1,4 +1,4 @@
-# 🏡 Silversjö Real Estate
+# Silversjö Real Estate
 
 A full-stack web application for browsing, searching, and managing real estate property listings. Built with React, Node.js, Supabase, and TypeScript — featuring user authentication, admin controls, and a clean mobile-first UI.
 
