@@ -23,7 +23,7 @@ https://silversjo-technical-exam.vercel.app/
 
 ---
 
-## 📦 Tech Stack
+## Tech Stack
 
 | Layer      | Tech                             |
 | ---------- | -------------------------------- |
@@ -37,9 +37,9 @@ https://silversjo-technical-exam.vercel.app/
 
 ---
 
-## ✨ FEATURES
+## FEATURES
 
-### 🔐 User Roles
+### User Roles
 
 - Regular users can browse listings.
 - Admins can create, edit, and delete listings.
