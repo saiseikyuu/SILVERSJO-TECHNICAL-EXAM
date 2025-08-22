@@ -10,7 +10,7 @@ https://silversjo-technical-exam.vercel.app/
 
 ---
 
-## 👥 Test Accounts
+## Test Accounts
 
 ### Admin User
 
